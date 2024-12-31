@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Default number of iterations
+ITERATIONS=1000
+
+# Function to show usage
+usage() {
+	echo "Usage: $0 [-d|-e] [--iter <iterations>] <source> <target>"
+	echo "  -d              Decrypt and decompress an encrypted file"
+	echo "  -e              Encrypt and compress a directory"
+	echo "  -i <num>        Specify the number of PBKDF2 iterations (default: 1000)"
+	echo "  <source>        Source file (encrypted file for -d, directory for -e)"
+	echo "  <target>        Target directory (for -d) or output file (for -e)"
+	exit 1
+}
+
+# Parse command-line options
+MODE=""
+while [[ "$1" =~ ^- ]]; do
+	case $1 in
+	-d)
+		MODE="decrypt"
+		;;
+	-e)
+		MODE="encrypt"
+		;;
+	-i)
+		shift
+		ITERATIONS=$1
+		;;
+	*)
+		usage
+		;;
+	esac
+	shift
+done
+
+# Ensure mode is specified
+if [ -z "$MODE" ]; then
+	usage
+fi
+
+# Ensure proper number of arguments
+if [ "$#" -ne 2 ]; then
+	usage
+fi
+
+SOURCE=$1
+TARGET=$2
+
+# Check if data is being piped into the script
+if [ -p /dev/stdin ]; then
+	# Read password from stdin if data is piped
+	read PASSWORD
+else
+	# Otherwise, prompt for the password
+	echo -n "Enter password: "
+	read -s PASSWORD
+	echo
+fi
+
+# Perform the requested operation
+SPIN_PID=$!
+
+echo -n "Working... "
+
+if [ "$MODE" == "decrypt" ]; then
+	# Create target directory if it doesn't exist
+	mkdir -p "$TARGET"
+
+	# Decrypt and decompress the file
+	openssl enc -d -aes-256-cbc -pbkdf2 -iter "$ITERATIONS" -pass pass:"$PASSWORD" -in "$SOURCE" | tar xzf - -C "$TARGET"
+	echo "Decrypted and decompressed files into $TARGET"
+
+elif [ "$MODE" == "encrypt" ]; then
+	# Compress and encrypt the directory contents
+	tar czf - "$SOURCE" | openssl enc -aes-256-cbc -pbkdf2 -iter "$ITERATIONS" -salt -pass pass:"$PASSWORD" -out "$TARGET"
+	echo "Encrypted and compressed file is: $TARGET"
+fi
