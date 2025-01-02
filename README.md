@@ -26,6 +26,7 @@ This script provides a simple way to encrypt and compress directories or decrypt
 
 - `-d`: Decrypt and decompress an encrypted file.
 - `-e`: Encrypt and compress a directory.
+- `-b`: The piped password is encoded with base64. This option decodes it with `base64 -d -w 0`.
 - `-i <iterations>`: Number of PBKDF2 iterations (default: 1000). Increase for stronger key derivation security.
 - `<source>`: Source file (encrypted file for `-d`, directory for `-e`).
 - `<target>`: Target directory (for `-d`) or output file (for `-e`).

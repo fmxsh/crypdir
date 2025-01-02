@@ -28,6 +28,9 @@ while [[ "$1" =~ ^- ]]; do
 		shift
 		ITERATIONS=$1
 		;;
+	-b)
+		BASE64_DECODE=1
+		;;
 	*)
 		usage
 		;;
@@ -52,6 +55,10 @@ TARGET=$2
 if [ -p /dev/stdin ]; then
 	# Read password from stdin if data is piped
 	read PASSWORD
+
+	if [ "$BASE64_DECODE" -eq 1 ]; then
+		PASSWORD=$(echo "$PASSWORD" | base64 -d -w 0)
+	fi
 else
 	# Otherwise, prompt for the password
 	echo -n "Enter password: "
