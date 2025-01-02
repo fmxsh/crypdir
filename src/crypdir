@@ -76,11 +76,11 @@ if [ "$MODE" == "decrypt" ]; then
 	mkdir -p "$TARGET"
 
 	# Decrypt and decompress the file
-	openssl enc -d -aes-256-cbc -pbkdf2 -iter "$ITERATIONS" -pass pass:"$PASSWORD" -in "$SOURCE" | tar xzf - -C "$TARGET"
+	openssl enc -d -aes-256-cbc -pbkdf2 -iter "$ITERATIONS" -pass pass:'$PASSWORD' -in "$SOURCE" | tar xzf - -C "$TARGET"
 	echo "Decrypted and decompressed files into $TARGET"
 
 elif [ "$MODE" == "encrypt" ]; then
 	# Compress and encrypt the directory contents
-	tar czf - "$SOURCE" | openssl enc -aes-256-cbc -pbkdf2 -iter "$ITERATIONS" -salt -pass pass:"$PASSWORD" -out "$TARGET"
+	tar czf - "$SOURCE" | openssl enc -aes-256-cbc -pbkdf2 -iter "$ITERATIONS" -salt -pass pass:'$PASSWORD' -out "$TARGET"
 	echo "Encrypted and compressed file is: $TARGET"
 fi
